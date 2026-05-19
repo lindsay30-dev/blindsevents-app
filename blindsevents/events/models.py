@@ -41,9 +41,12 @@ class Event(models.Model):
 
     @property
     def tickets_sold(self):
-        return self.bookings.filter(status='confirmed').aggregate(
-            total=models.Sum('quantity')
-        )['total'] or 0
+        from django.db.models import Sum
+        result = BookingItem.objects.filter(
+            booking__event=self,
+            booking__status='confirmed'
+        ).aggregate(total=Sum('quantity'))
+        return result['total'] or 0
 
     @property
     def available_spots(self):
