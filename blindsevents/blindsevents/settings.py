@@ -49,7 +49,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     # Local
-    'events',
+
+    'apps.accounts',
+    'apps.events',
+    'apps.tickets',
+    'apps.bookings',
+    'apps.stats',
 ]
 
 MIDDLEWARE = [
