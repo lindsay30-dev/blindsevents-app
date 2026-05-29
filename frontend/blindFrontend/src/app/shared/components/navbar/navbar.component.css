@@ -1,0 +1,6 @@
+.nav-link:hover {
+  color: #C9A84C !important;
+}
+.dropdown-item:hover {
+  background: rgba(201,168,76,0.08) !important;
+}

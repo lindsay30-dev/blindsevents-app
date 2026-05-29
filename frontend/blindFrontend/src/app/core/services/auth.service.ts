@@ -79,4 +79,13 @@ export class AuthService {
   getRefreshToken(): string | null {
     return localStorage.getItem('refresh_token');
   }
-}
+
+  updateProfile(data: any): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/auth/profile/`, data).pipe(
+      tap(user => {
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      })
+    );
+  }
+}  

@@ -1,0 +1,103 @@
+<nav class="navbar navbar-expand-lg sticky-top" style="background:#0A0A0B; border-bottom:1px solid rgba(201,168,76,0.2);">
+  <div class="container">
+
+    <!-- Logo -->
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+      <div style="width:34px;height:34px;border-radius:50%;border:1px solid #C9A84C;
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:16px;color:#C9A84C;">B</div>
+      <span style="color:#fff;font-size:14px;font-weight:500;">
+        Big Shot <span style="color:#C9A84C;">Events</span>
+      </span>
+    </a>
+
+    <!-- Toggle mobile -->
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            style="border-color:rgba(201,168,76,0.3);">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Liens centre -->
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/"
+             style="color:rgba(255,255,255,0.6);font-size:12px;">
+            Découvrir
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn">
+          <a class="nav-link" routerLink="/dashboard"
+             style="color:rgba(255,255,255,0.6);font-size:12px;">
+            Mon espace
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isLoggedIn">
+          <a class="nav-link" routerLink="/wallet"
+             style="color:rgba(255,255,255,0.6);font-size:12px;">
+            Mes billets
+          </a>
+        </li>
+      </ul>
+
+      <!-- Boutons droite -->
+      <div class="d-flex gap-2 align-items-center">
+        <ng-container *ngIf="!isLoggedIn">
+          <a routerLink="/auth/login"
+             class="btn btn-sm"
+             style="border:1px solid rgba(201,168,76,0.4);color:#C9A84C;font-size:11px;">
+            Se connecter
+          </a>
+          <a routerLink="/auth/register"
+             class="btn btn-sm"
+             style="background:#C9A84C;color:#0A0A0B;font-size:11px;font-weight:500;">
+            Créer un compte
+          </a>
+        </ng-container>
+
+        <ng-container *ngIf="isLoggedIn">
+          <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                    type="button" data-bs-toggle="dropdown"
+                    style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;font-size:11px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,0.2);
+                          display:flex;align-items:center;justify-content:center;font-size:10px;">
+                {{ currentUser?.first_name?.charAt(0) || 'U' }}
+              </div>
+              {{ currentUser?.first_name || currentUser?.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end"
+                style="background:#1C1F2A;border:1px solid rgba(201,168,76,0.2);">
+              <li>
+                <a class="dropdown-item" routerLink="/profile"
+                   style="color:rgba(255,255,255,0.7);font-size:12px;">
+                  <i class="fas fa-user me-2" style="color:#C9A84C;"></i>Mon profil
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/dashboard"
+                   style="color:rgba(255,255,255,0.7);font-size:12px;">
+                  <i class="fas fa-tachometer-alt me-2" style="color:#C9A84C;"></i>Dashboard
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/wallet"
+                   style="color:rgba(255,255,255,0.7);font-size:12px;">
+                  <i class="fas fa-ticket-alt me-2" style="color:#C9A84C;"></i>Mes billets
+                </a>
+              </li>
+              <li><hr class="dropdown-divider" style="border-color:rgba(201,168,76,0.1);"></li>
+              <li>
+                <button class="dropdown-item" (click)="logout()"
+                        style="color:#E24B4A;font-size:12px;">
+                  <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                </button>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</nav>

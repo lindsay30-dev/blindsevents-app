@@ -1,0 +1,17 @@
+.footer-link {
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 5px;
+  transition: color .15s;
+}
+.footer-link:hover {
+  color: #C9A84C;
+}
+.pay-badge {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
