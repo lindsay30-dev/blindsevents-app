@@ -1,0 +1,11 @@
+<app-navbar></app-navbar>
+<div class="container scan-page">
+  <h2>Scanner un billet</h2>
+  <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+  @if (!scanning) {
+    <button class="btn-primary" (click)="startScan()">Démarrer le scan</button>
+  } @else {
+    <button class="btn-secondary" (click)="stopScan()">Arrêter</button>
+  }
+</div>
+<app-footer></app-footer>

@@ -1,1 +1,54 @@
-<p>profil works!</p>
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>Votre profil a été mis à jour avec succès. L'élégance est dans les détails.</h1>
+    <div class="profile-card">
+      <div class="avatar">
+        <img [src]="avatarPreview" alt="avatar">
+        <input type="file" (change)="onAvatarSelected($event)" accept="image/*" id="avatarInput">
+        <label for="avatarInput" class="edit-avatar">✎</label>
+      </div>
+      <div class="user-info">
+        <h2>{{user?.prenom}} {{user?.nom}}</h2>
+        <span class="role">{{user?.role}}</span>
+        <div class="stats">
+          <div><strong>24</strong> ÉVÉNEMENTS</div>
+          <div><strong>1.2k</strong> INVITÉS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="profile-form">
+    <h3>Informations Personnelles</h3>
+    <form [formGroup]="profileForm">
+      <div class="form-row">
+        <div>
+          <label>PRÉNOM</label>
+          <input formControlName="prenom">
+        </div>
+        <div>
+          <label>NOM</label>
+          <input formControlName="nom">
+        </div>
+      </div>
+      <div>
+        <label>EMAIL</label>
+        <input formControlName="email">
+      </div>
+      <div>
+        <label>TÉLÉPHONE (+237)</label>
+        <input formControlName="phone">
+      </div>
+      <div>
+        <label>BIOGRAPHIE</label>
+        <textarea formControlName="bio" rows="3"></textarea>
+      </div>
+      <div class="verification">
+        <p>Statut de vérification: <strong>Identité vérifiée</strong> • Niveau Élite Big Shot</p>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="profileForm.reset()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="save()">Sauvegarder</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+.hero {
+  height: 50vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+}
+.hero-content {
+  text-align: center;
+  color: white;
+}
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 3rem 0;
+}
+.meta {
+  display: flex;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+.availability {
+  margin: 1rem 0;
+}
+.progress {
+  background: var(--surface-container-highest);
+  border-radius: var(--rounded-full);
+  height: 8px;
+  width: 100%;
+}
+.bar {
+  background: var(--primary);
+  width: 85%;
+  height: 100%;
+  border-radius: var(--rounded-full);
+}
+.ticket-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--outline-variant);
+}
+.qty {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.qty button {
+  background: var(--surface-container-highest);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--rounded);
+}
+.add {
+  background: var(--primary);
+  color: var(--on-primary);
+  width: auto;
+  padding: 0 1rem;
+}
+.btn-block {
+  width: 100%;
+  margin-top: 2rem;
+}
+.help {
+  text-align: center;
+  margin-top: 1rem;
+}
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

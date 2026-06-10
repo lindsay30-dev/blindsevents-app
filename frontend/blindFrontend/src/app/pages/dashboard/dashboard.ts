@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { EventService } from '../../core/services/event.service';
-import { StatsService } from '../../core/services/stats.service';
+import { TicketService } from '../../core/services/ticket.service';
 import { Event } from '../../core/models/event.model';
-import { DashboardStats } from '../../core/models/stats.model';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,53 +14,92 @@ import { SpinnerComponent } from '../../shared/components/spinner/spinner.compon
   styleUrl: './dashboard.css'
 })
 export class Dashboard implements OnInit {
-  events: Event[]          = [];
-  stats: DashboardStats | null = null;
-  loading                  = false;
+  events: Event[] = [];
+  loading = false;
+  stats = { total_events: 0, total_sold: 0, total_revenue: 0 };
 
   constructor(
+    private authService: AuthService,
     private eventService: EventService,
-    private statsService: StatsService
+    private ticketService: TicketService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadStats();
-    this.loadMyEvents();
+    this.loadData();
   }
 
-  loadStats(): void {
-    this.statsService.getDashboard().subscribe({
-      next: data => this.stats = data,
-      error: err  => console.error(err)
-    });
+  get currentUser() {
+    return this.authService.currentUser();
   }
 
-  loadMyEvents(): void {
+  get isOrganizer(): boolean {
+    return this.currentUser?.role === 'ORGANISATEUR';
+  }
+
+  loadData(): void {
     this.loading = true;
-    this.eventService.getMyEvents().subscribe({
-      next: data => {
-        this.events  = data;
-        this.loading = false;
-      },
-      error: err => {
-        console.error(err);
-        this.loading = false;
-      }
-    });
+
+    if (this.isOrganizer && this.currentUser) {
+      // Organisateur : charger ses événements et calculer les stats
+      this.events = this.eventService.getByOrganizer(this.currentUser.id);
+      this.stats.total_events = this.events.length;
+
+      const allTickets = this.ticketService.getAllTickets();
+      const myEventIds = this.events.map(e => e.id);
+      const soldTickets = allTickets.filter(t => myEventIds.includes(t.eventId));
+
+      this.stats.total_sold = soldTickets.reduce((sum, t) => sum + t.quantity, 0);
+      this.stats.total_revenue = soldTickets.reduce((sum, t) => sum + t.totalPrice, 0);
+    } else {
+      // Participant : charger tous les événements
+      this.events = this.eventService.events();
+    }
+
+    this.loading = false;
   }
 
-  publishEvent(id: number): void {
-    this.eventService.publishEvent(id).subscribe({
-      next: () => this.loadMyEvents(),
-      error: err => console.error(err)
-    });
+  getMinPrice(event: any): number {
+    if (!event.tickets || event.tickets.length === 0) return 0;
+    return Math.min(...event.tickets.map((t: any) => t.price));
   }
 
-  deleteEvent(id: number): void {
+  getStatusLabel(status: string): string {
+    return status ? status.toUpperCase() : 'ACTIF';
+  }
+
+  getStatusClass(status: string): string {
+    return 'status-active';
+  }
+
+  deleteEvent(id: string): void {
     if (!confirm('Confirmer la suppression ?')) return;
-    this.eventService.deleteEvent(id).subscribe({
-      next: () => this.loadMyEvents(),
-      error: err => console.error(err)
-    });
+    this.eventService.delete(id);
+    this.loadData();
+  }
+
+  reserveEvent(event: Event): void {
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const defaultTicket = event.tickets?.[0];
+    if (!defaultTicket) {
+      alert("Aucun billet disponible.");
+      return;
+    }
+
+    sessionStorage.setItem('checkout_event', JSON.stringify(event));
+    sessionStorage.setItem('checkout_items', JSON.stringify([{
+      eventId: event.id,
+      eventTitle: event.title,
+      eventDate: event.date,
+      ticketType: defaultTicket.type,
+      price: defaultTicket.price,
+      quantity: 1
+    }]));
+    sessionStorage.setItem('checkout_total', String(defaultTicket.price));
+    this.router.navigate(['/checkout']);
   }
 }

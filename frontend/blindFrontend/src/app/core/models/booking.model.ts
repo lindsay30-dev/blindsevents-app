@@ -11,7 +11,7 @@ export interface Booking {
   user: number;
   user_name: string;
   event: number;
-  event_title: string;
+  event_title?: string;
   event_date: string;
   event_time: string;
   event_location: string;

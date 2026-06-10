@@ -5,7 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-profil',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profil.html',
@@ -13,60 +13,70 @@ import { User } from '../../core/models/user.model';
 })
 export class Profile implements OnInit {
   profileForm: FormGroup;
-  loading  = false;
-  success  = '';
-  error    = '';
+  loading = false;
+  success = '';
+  error = '';
   user: User | null = null;
+  avatarPreview: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService
-  ) {
+  statsData = { events: 24, guests: '1.2k' };
+
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.profileForm = this.fb.group({
-      first_name: ['', Validators.required],
-      last_name:  ['', Validators.required],
-      email:      ['', [Validators.required, Validators.email]],
-      profile: this.fb.group({
-        phone: [''],
-        bio:   [''],
-        role:  ['']
-      })
+      prenom: ['', Validators.required],
+      nom: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      bio: ['']
     });
   }
 
   ngOnInit(): void {
-    this.authService.getProfile().subscribe({
-      next: user => {
-        this.user = user;
-        this.profileForm.patchValue({
-          first_name: user.first_name,
-          last_name:  user.last_name,
-          email:      user.email,
-          profile: {
-            phone: user.profile?.phone || '',
-            bio:   user.profile?.bio   || '',
-            role:  user.profile?.role  || ''
-          }
-        });
-      }
-    });
+    const currentUser = this.authService.currentUser();
+    if (currentUser) {
+      this.user = currentUser;
+      this.avatarPreview = currentUser.avatar || null;
+      this.profileForm.patchValue({
+        prenom: currentUser.prenom,
+        nom: currentUser.nom,
+        email: currentUser.email,
+        phone: currentUser.phone || '',
+        bio: currentUser.bio || ''
+      });
+    }
   }
 
-  onSubmit(): void {
-    if (this.profileForm.invalid) return;
-    this.loading = true;
-    this.error   = '';
-    this.success = '';
+  onAvatarSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.avatarPreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
-    this.authService.updateProfile(this.profileForm.value).subscribe({
-      next: () => {
-        this.success = 'Profil mis à jour avec succès !';
-        this.loading = false;
-      },
-      error: err => {
-        this.error   = 'Erreur lors de la mise à jour.';
-        this.loading = false;
-      }
-    });
+  save(): void {
+    if (this.profileForm.invalid) return;
+
+    this.loading = true;
+    const updates: Partial<User> = {
+      prenom: this.profileForm.get('prenom')?.value,
+      nom: this.profileForm.get('nom')?.value,
+      email: this.profileForm.get('email')?.value,
+      phone: this.profileForm.get('phone')?.value,
+      bio: this.profileForm.get('bio')?.value
+    };
+
+    if (this.avatarPreview) {
+      updates.avatar = this.avatarPreview;
+    }
+
+    this.authService.updateProfile(updates);
+    this.user = this.authService.currentUser();
+    this.success = 'Profil mis à jour avec succès';
+    this.loading = false;
+    setTimeout(() => this.success = '', 3000);
   }
 }

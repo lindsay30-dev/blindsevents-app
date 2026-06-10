@@ -1,1 +1,29 @@
-<p>wallet works!</p>
+<app-navbar></app-navbar>
+<div class="container wallet">
+  <h1>Mes billets</h1>
+  <p>Retrouvez vos accès exclusifs pour les événements à venir.</p>
+  <div class="tickets-list">
+    @for (ticket of tickets; track ticket.id) {
+      <div class="ticket-card">
+        <div class="ticket-header">
+          <h3>{{ticket.eventTitle}}</h3>
+         <div class="ticket-status"
+     [class.confirmed]="ticket.status==='confirmed'"
+     [class.cancelled]="ticket.status==='cancelled'">
+  {{ticket.status === 'confirmed' ? 'Confirmé' : ticket.status === 'cancelled' ? 'Annulé' : 'En attente'}}
+</div>
+        </div>
+        <p>{{ticket.eventDate | date:'fullDate'}} • {{ticket.eventLocation}}</p>
+        <p><strong>{{ticket.ticketType}}</strong> x{{ticket.quantity}} - {{ticket.totalPrice | currency:'XAF':'symbol':'1.0-0'}}</p>
+        <div class="ref">RÉFÉRENCE {{ticket.reference}}</div>
+        <div class="actions">
+          <button class="btn-outline" (click)="downloadTicket(ticket)">TÉLÉCHARGER</button>
+          <button class="btn-outline" (click)="showQR(ticket)">AFFICHER QR</button>
+        </div>
+      </div>
+    } @empty {
+      <p>Aucun billet pour le moment. <a routerLink="/home">Réservez maintenant</a></p>
+    }
+  </div>
+</div>
+<app-footer></app-footer>

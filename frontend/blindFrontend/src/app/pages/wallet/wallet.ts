@@ -1,45 +1,47 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BookingService } from '../../core/services/booking.service';
-import { Booking } from '../../core/models/booking.model';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { TicketService, Ticket } from '../../core/services/ticket.service';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink, NavbarComponent, FooterComponent],
   templateUrl: './wallet.html',
-  styleUrl: './wallet.css'
+  styleUrls: ['./wallet.css']
 })
-export class Wallet implements OnInit {
-  bookings: Booking[] = [];
-  loading             = false;
+export class WalletComponent implements OnInit {
+  private auth = inject(AuthService);
+  private ticketService = inject(TicketService);
+  private notify = inject(NotificationService);
+  tickets: Ticket[] = [];
 
-  constructor(private bookingService: BookingService) {}
-
-  ngOnInit(): void {
-    this.loadWallet();
+  ngOnInit() {
+    const user = this.auth.currentUser();
+    if (user) {
+      // ✅ getUserTickets retourne un tableau direct
+      this.tickets = this.ticketService.getUserTickets(user.id);
+    }
   }
 
-  loadWallet(): void {
-    this.loading = true;
-    this.bookingService.getWallet().subscribe({
-      next: data => {
-        this.bookings = data;
-        this.loading  = false;
-      },
-      error: err => {
-        console.error(err);
-        this.loading = false;
-      }
-    });
+  downloadTicket(ticket: Ticket) {
+    const content = `Billet: ${ticket.reference}\nÉvénement: ${ticket.eventTitle}\nDate: ${ticket.eventDate}\nStatut: ${ticket.status}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `billet_${ticket.reference}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.notify.success('Billet téléchargé');
   }
 
-  cancelBooking(id: number): void {
-    if (!confirm('Annuler cette réservation ?')) return;
-    this.bookingService.cancelBooking(id).subscribe({
-      next: () => this.loadWallet(),
-      error: err => console.error(err)
-    });
+  showQR(ticket: Ticket) {
+    const qrData = ticket.reference;
+    alert(`QR Code data: ${qrData}\nScannez ce code pour valider le billet.`);
   }
 }

@@ -1,1 +1,52 @@
-<p>event-detail works!</p>
+@if (event) {
+  <app-navbar></app-navbar>
+
+  <div class="event-hero" [style.background-image]="'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(' + (event.imageUrl || 'assets/default-event.jpg') + ')'">
+    <div class="container">
+      <h1 class="headline-lg">{{event.title}}</h1>
+      <p>{{event.date | date:'dd MMMM yyyy'}} à {{event.time}} — {{event.location}}</p>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-8">
+        <h2>Description</h2>
+        <p>{{event.description}}</p>
+
+        <h3 class="mt-4">Code vestimentaire</h3>
+        <p><strong>{{event.dressCode || 'Tenue de soirée exigée'}}</strong></p>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="ticket-selector">
+          <h3>Choisir vos billets</h3>
+
+          @for (ticket of event.tickets; track ticket.type) {
+            <div class="ticket-option">
+              <div class="ticket-info">
+                <strong>{{ticket.type}}</strong>
+                <span>{{ticket.price | currency:'XAF':'symbol':'1.0-0'}}</span>
+              </div>
+              <div class="ticket-controls">
+                <button (click)="decrement(ticket)">-</button>
+                <span>{{quantity[ticket.type]}}</span>
+                <button (click)="increment(ticket)">+</button>
+              </div>
+              <button class="add" (click)="addToCart(ticket)">Ajouter</button>
+            </div>
+          }
+
+          <button class="primary btn-block" (click)="goToCheckout()">Commandez mes billets</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+} @else {
+  <div class="container py-5 text-center">
+    <h2>Événement non trouvé</h2>
+    <a routerLink="/">Retour à l'accueil</a>
+  </div>
+}

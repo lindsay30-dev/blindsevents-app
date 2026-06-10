@@ -1,0 +1,22 @@
+<div class="stats-grid">
+  <div class="stat-card"><span>Événements créés</span><strong>{{stats.eventsCount}}</strong></div>
+  <div class="stat-card"><span>Invitations totales</span><strong>{{stats.totalInvites}}</strong></div>
+  <div class="stat-card"><span>Revenus (XAF)</span><strong>{{stats.revenue | number}}</strong></div>
+</div>
+<div class="chart-container">
+  <canvas id="revenueChart" height="200"></canvas>
+</div>
+<div class="my-events">
+  <h3>Mes événements</h3>
+  <div class="events-list">
+    @for (event of myEvents; track event.id) {
+      <div class="event-item">
+        <span>{{event.title}}</span>
+        <a [routerLink]="['/event', event.id]">Voir</a>
+      </div>
+    } @empty {
+      <p>Aucun événement créé. <a routerLink="/event-create">Créez-en un maintenant</a></p>
+    }
+  </div>
+  <button routerLink="/event-create" class="btn-primary">+ Créer un événement</button>
+</div>

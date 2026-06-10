@@ -1,0 +1,29 @@
+.checkout {
+  max-width: 600px;
+  margin: 2rem auto;
+  text-align: center;
+}
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.method {
+  background: var(--surface-container-low);
+  padding: 1rem;
+  border-radius: var(--rounded-lg);
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.method.active {
+  border-color: var(--primary);
+}
+.total {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 2rem 0;
+}

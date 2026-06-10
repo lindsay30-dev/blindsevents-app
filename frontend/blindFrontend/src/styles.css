@@ -1,1 +1,94 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --font-serif: 'EB Garamond', serif;
+  --font-sans: 'Hanken Grotesk', sans-serif;
+
+  /* Dark mode (default)*/
+  --surface: #131314;
+  --surface-dim: #131314;
+  --surface-bright: #3a393a;
+  --surface-container-lowest: #0e0e0f;
+  --surface-container-low: #1c1b1c;
+  --surface-container: #201f20;
+  --surface-container-high: #2a2a2b;
+  --surface-container-highest: #353436;
+  --on-surface: #e5e2e3;
+  --on-surface-variant: #d0c5b2;
+  --outline: #99907e;
+  --outline-variant: #4d4637;
+  --primary: #e6c364;
+  --on-primary: #3d2e00;
+  --primary-container: #c9a84c;
+  --on-primary-container: #503d00;
+  --secondary: #d8c594;
+  --error: #e24b4a;
+  --success: #1d9e75;
+  --orange-money: #ff6600;
+  --mtn-momo: #ffcc00;
+
+  /*Spacing*/
+  --unit: 8px;
+  --rounded-sm: 0.25rem;
+  --rounded: 0.5rem;
+  --rounded-md: 0.75rem;
+  --rounded-lg: 1rem;
+  --rounded-xl: 1.5rem;
+  --rounded-full: 9999px;
+
+  /*Transition*/
+  --transition: all 0.2s ease;
+}
+
+.light-theme {
+  --surface: #f7f4ee;
+  --surface-dim: #e8e2d5;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #fefcf8;
+  --surface-container: #faf7f0;
+  --surface-container-high: #f2ede3;
+  --surface-container-highest: #e9e2d6;
+  --on-surface: #1c1b1c;
+  --on-surface-variant: #4d4637;
+  --outline: #99907e;
+  --outline-variant: #d0c5b2;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--surface);
+  color: var(--on-surface);
+  transition: background-color 0.3s, color 0.2s;
+}
+
+h1, h2, h3, h4, .serif {
+  font-family: var(--font-serif);
+}
+
+button, .btn {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}

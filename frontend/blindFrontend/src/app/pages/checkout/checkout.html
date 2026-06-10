@@ -1,1 +1,18 @@
-<p>checkout works!</p>
+<app-navbar></app-navbar>
+<div class="container checkout">
+  <h2>Choisissez votre mode de paiement</h2>
+  <div class="payment-methods">
+    <div class="method" [class.active]="selectedMethod==='orange'" (click)="selectMethod('orange')">
+      <img src="assets/orange.png" alt="Orange Money"> Orange Money <span>Frais: 0 XAF</span>
+    </div>
+    <div class="method" [class.active]="selectedMethod==='mtn'" (click)="selectMethod('mtn')">
+      <img src="assets/mtn.png" alt="MTN MoMo"> MTN MoMo <span>Frais: 0 XAF</span>
+    </div>
+    <div class="method" [class.active]="selectedMethod==='card'" (click)="selectMethod('card')">
+      💳 Carte Bancaire <span>Traitement: 24h</span>
+    </div>
+  </div>
+  <div class="total">TOTAL À PAYER: {{total | currency:'XAF':'symbol':'1.0-0'}}</div>
+  <button class="btn-primary" (click)="pay()">PAYER MAINTENANT</button>
+</div>
+<app-footer></app-footer>

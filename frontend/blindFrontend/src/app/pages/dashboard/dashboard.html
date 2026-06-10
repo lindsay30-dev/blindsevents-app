@@ -1,1 +1,215 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <span class="material-symbols-outlined sb-icon">dashboard</span>
+      <span class="sb-brand-label">{{ isOrganizer ? 'ESPACE ORGANISATEUR' : 'ESPACE PARTICIPANT' }}</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active">
+        <span class="material-symbols-outlined">calendar_month</span>
+        MES ÉVÉNEMENTS
+      </a>
+      @if (isOrganizer) {
+        <a class="sidebar-link">
+          <span class="material-symbols-outlined">show_chart</span>
+          STATISTIQUES
+        </a>
+        <a class="sidebar-link">
+          <span class="material-symbols-outlined">payments</span>
+          FINANCES
+        </a>
+      } @else {
+        <a class="sidebar-link">
+          <span class="material-symbols-outlined">confirmation_number</span>
+          MES BILLETS
+        </a>
+      }
+      <a class="sidebar-link" routerLink="/profil">
+        <span class="material-symbols-outlined">person</span>
+        MON PROFIL
+      </a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    @if (isOrganizer) {
+      <!-- VUE ORGANISATEUR -->
+      <div class="dash-header">
+        <div>
+          <h1 class="dash-title">Bienvenue, {{ currentUser?.prenom || 'Organisateur' }}</h1>
+          <p class="dash-sub">Voici un aperçu de vos performances événementielles.</p>
+        </div>
+        <a routerLink="/event-create" class="btn-create-event">
+          <span class="material-symbols-outlined">add_circle</span>
+          NOUVEL ÉVÉNEMENT
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      @if (stats) {
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">ÉVÉNEMENTS</div>
+            <div class="stat-val">{{ stats.total_events }}</div>
+            <span class="material-symbols-outlined stat-icon">calendar_month</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">BILLETS VENDUS</div>
+            <div class="stat-val">{{ stats.total_sold | number }}</div>
+            <span class="material-symbols-outlined stat-icon">confirmation_number</span>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">REVENUS XAF</div>
+            <div class="stat-val">{{ stats.total_revenue | number }}</div>
+            <span class="material-symbols-outlined stat-icon">payments</span>
+          </div>
+        </div>
+      }
+
+      <!-- Events Table -->
+      <div class="events-section">
+        <h2 class="section-title">Mes événements récents</h2>
+
+        @if (loading) {
+          <div class="text-center py-4">
+            <div class="spinner"></div>
+          </div>
+        }
+
+        @if (!loading && events.length > 0) {
+          <table class="events-table">
+            <thead>
+              <tr>
+                <th>ÉVÉNEMENT</th>
+                <th>BILLETS</th>
+                <th>REVENUS</th>
+                <th>STATUT</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of events; track event.id) {
+                <tr class="table-row">
+                  <td>
+                    <div class="event-info">
+                      @if (event.imageUrl) {
+                        <img [src]="event.imageUrl" [alt]="event.title" class="event-thumb">
+                      } @else {
+                        <span class="material-symbols-outlined no-img">event</span>
+                      }
+                      <div>
+                        <div class="event-title">{{ event.title }}</div>
+                        <div class="event-date">{{ event.date }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ event.tickets[0]?.available || 0 }}</td>
+                  <td class="rev-cell">{{ (event.tickets[0]?.price || 0) * 10 | number }} XAF</td>
+                  <td>
+                    <span class="status-pill" [class]="getStatusClass('published')">
+                      {{ getStatusLabel('published') }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="more-btn" (click)="deleteEvent(event.id)" title="Supprimer">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        @if (!loading && events.length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-outlined">event_busy</span>
+            <p>Aucun événement créé pour l'instant.</p>
+            <a routerLink="/event-create" class="btn-create-first">Créer mon premier événement</a>
+          </div>
+        }
+      </div>
+
+    } @else {
+      <!-- VUE PARTICIPANT -->
+      <div class="dash-header">
+        <div>
+          <h1 class="dash-title">Bonjour, {{ currentUser?.prenom || 'Participant' }} !</h1>
+          <p class="dash-sub">Découvrez les meilleurs événements et réservez vos places en toute simplicité.</p>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <a routerLink="/wallet" class="quick-action">
+          <span class="material-symbols-outlined">confirmation_number</span>
+          Mes Billets
+          <span class="qa-sub">Consulter mes réservations</span>
+        </a>
+        <a routerLink="/profil" class="quick-action">
+          <span class="material-symbols-outlined">person</span>
+          Mon Profil
+          <span class="qa-sub">Modifier mes informations</span>
+        </a>
+      </div>
+
+      <div class="events-section">
+        <h2 class="section-title">Événements disponibles</h2>
+
+        @if (loading) {
+          <div class="text-center py-4">
+            <div class="spinner"></div>
+          </div>
+        }
+
+        @if (!loading && events.length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-outlined">search_off</span>
+            <p>Aucun événement disponible pour le moment.</p>
+          </div>
+        }
+
+        @if (!loading && events.length > 0) {
+          <div class="events-grid-participant">
+            @for (event of events; track event.id) {
+              <div class="event-card-participant">
+                @if (event.imageUrl) {
+                  <img [src]="event.imageUrl" [alt]="event.title" class="ecp-img">
+                } @else {
+                  <div class="no-image">
+                    <span class="material-symbols-outlined">event</span>
+                  </div>
+                }
+                <div class="ecp-body">
+                  <span class="ecp-category">{{ event.category || 'Événement' }}</span>
+                  <h3 class="ecp-title">{{ event.title }}</h3>
+                  <div class="ecp-meta">
+                    <div>
+                      <span class="material-symbols-outlined">calendar_today</span>
+                      {{ event.date }} à {{ event.time }}
+                    </div>
+                    <div>
+                      <span class="material-symbols-outlined">location_on</span>
+                      {{ event.location }}
+                    </div>
+                  </div>
+                  <div class="ecp-footer">
+                    <div class="ecp-price">
+                      À partir de
+                      <strong>{{ getMinPrice(event) === 0 ? 'Gratuit' : (getMinPrice(event) | number) + ' XAF' }}</strong>
+                    </div>
+                    <button class="btn-reserve" (click)="reserveEvent(event)">
+                      <span class="material-symbols-outlined">shopping_cart</span>
+                      Réserver
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

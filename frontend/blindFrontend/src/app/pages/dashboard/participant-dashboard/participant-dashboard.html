@@ -1,0 +1,19 @@
+<h2>Mes billets à venir</h2>
+<div class="tickets-list">
+  @for (ticket of upcomingTickets; track ticket.id) {
+    <div class="ticket-card">
+      <h3>{{ticket.eventTitle}}</h3>
+      <p>{{ticket.eventDate}} • {{ticket.eventLocation}}</p>
+      <p>{{ticket.ticketType}} x{{ticket.quantity}} - {{ticket.totalPrice | currency:'XAF':'symbol':'1.0-0'}}</p>
+      <a [routerLink]="['/event', ticket.eventId]" class="btn-outline">Voir événement</a>
+    </div>
+  } @empty {
+    <p>Aucun billet à venir. <a routerLink="/home">Réservez dès maintenant</a></p>
+  }
+</div>
+<h2>Historique</h2>
+<div class="tickets-list">
+  @for (ticket of pastTickets; track ticket.id) {
+    <div class="ticket-card muted">{{ticket.eventTitle}} - terminé</div>
+  }
+</div>

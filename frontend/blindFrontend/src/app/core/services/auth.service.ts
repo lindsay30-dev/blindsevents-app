@@ -1,91 +1,121 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import {
-  User, AuthResponse,
-  LoginRequest, RegisterRequest
-} from '../models/user.model';
+import { Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { NotificationService } from './notification.service';
+import { User } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  getProfile() {
+    throw new Error('Method not implemented.');
+  }
+  currentUser = signal<User | null>(null);
 
-  constructor(private http: HttpClient) {
-    this.loadUserFromStorage();
+  constructor(private router: Router, private notify: NotificationService) {
+    const stored = localStorage.getItem('bigshot_user');
+    if (stored) this.currentUser.set(JSON.parse(stored));
+    else this.seedDefaultUser();
   }
 
-  private loadUserFromStorage(): void {
-    const user = localStorage.getItem('user');
-    if (user) {
-      this.currentUserSubject.next(JSON.parse(user));
+  private seedDefaultUser() {
+    const users = this.getUsers();
+    if (users.length === 0) {
+      const defaultOrganizer: User & { password: string } = {
+        id: 'org1',
+        prenom: 'Jean-Paul',
+        nom: 'MBIDA',
+        username: 'jp_mbida',
+        email: 'jp.mbida@example.com',
+        role: 'ORGANISATEUR',
+        phone: '699000000',
+        bio: 'Passionné par l\'excellence...',
+        verified: true,
+        eliteLevel: true,
+        avatar: 'assets/default-avatar.png',
+        password: 'password123'
+      };
+      const defaultParticipant: User & { password: string } = {
+        id: 'part1',
+        prenom: 'Marie',
+        nom: 'NDAO',
+        username: 'marie_ndao',
+        email: 'marie@example.com',
+        role: 'PARTICIPANT',
+        phone: '677888999',
+        bio: '',
+        verified: false,
+        eliteLevel: false,
+        avatar: 'assets/default-avatar.png',
+        password: 'password123'
+      };
+      localStorage.setItem('bigshot_users', JSON.stringify([defaultOrganizer, defaultParticipant]));
     }
   }
 
-  get currentUser(): User | null {
-    return this.currentUserSubject.value;
+  private getUsers(): any[] {
+    return JSON.parse(localStorage.getItem('bigshot_users') || '[]');
   }
 
-  get isLoggedIn(): boolean {
-    return !!localStorage.getItem('access_token');
+  register(userData: Omit<User, 'id' | 'verified' | 'eliteLevel'>, password: string): boolean {
+    const users = this.getUsers();
+    if (users.find(u => u.email === userData.email)) {
+      this.notify.error('Email déjà utilisé');
+      return false;
+    }
+    const newUser: User & { password: string } = {
+      ...userData,
+      id: crypto.randomUUID(),
+      verified: false,
+      eliteLevel: false,
+      password
+    };
+    users.push(newUser);
+    localStorage.setItem('bigshot_users', JSON.stringify(users));
+    const { password: _, ...safeUser } = newUser;
+    localStorage.setItem('bigshot_user', JSON.stringify(safeUser));
+    this.currentUser.set(safeUser);
+    this.notify.success('Inscription réussie');
+    this.router.navigate(['/dashboard']);
+    return true;
   }
 
-  get isOrganizer(): boolean {
-    return this.currentUser?.profile?.role === 'organizer';
+  login(email: string, password: string): boolean {
+    const users = this.getUsers();
+    const user = users.find((u: any) => u.email === email && u.password === password);
+    if (!user) {
+      this.notify.error('Identifiants incorrects');
+      return false;
+    }
+    const { password: _, ...safeUser } = user;
+    localStorage.setItem('bigshot_user', JSON.stringify(safeUser));
+    this.currentUser.set(safeUser);
+    this.notify.success('Connexion réussie');
+    this.router.navigate(['/dashboard']);
+    return true;
   }
 
-  login(data: LoginRequest): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/auth/login/`, data).pipe(
-      tap(res => {
-        localStorage.setItem('access_token', res.access);
-        localStorage.setItem('refresh_token', res.refresh);
-      })
-    );
+  logout() {
+    localStorage.removeItem('bigshot_user');
+    this.currentUser.set(null);
+    this.router.navigate(['/login']);
+    this.notify.info('Déconnecté');
   }
 
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register/`, data).pipe(
-      tap(res => {
-        localStorage.setItem('access_token', res.access);
-        localStorage.setItem('refresh_token', res.refresh);
-        localStorage.setItem('user', JSON.stringify(res.user));
-        this.currentUserSubject.next(res.user);
-      })
-    );
+  updateProfile(updates: Partial<User>) {
+    const current = this.currentUser();
+    if (!current) return;
+    const updated = { ...current, ...updates };
+    localStorage.setItem('bigshot_user', JSON.stringify(updated));
+    this.currentUser.set(updated);
+    // Also update in users list
+    const users = this.getUsers();
+    const index = users.findIndex((u: any) => u.id === current.id);
+    if (index !== -1) {
+      users[index] = { ...users[index], ...updates };
+      localStorage.setItem('bigshot_users', JSON.stringify(users));
+    }
+    this.notify.success('Profil mis à jour');
   }
-
-  getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/auth/profile/`).pipe(
-      tap(user => {
-        localStorage.setItem('user', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      })
-    );
-  }
-
-  logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
-  }
-
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
-  }
-
-  updateProfile(data: any): Observable<User> {
-    return this.http.patch<User>(`${this.apiUrl}/auth/profile/`, data).pipe(
-      tap(user => {
-        localStorage.setItem('user', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      })
-    );
-  }
-}  
+  return localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+}
+}

@@ -1,0 +1,22 @@
+<app-navbar></app-navbar>
+<div class="container form-container">
+  <h2>Créer un événement</h2>
+  <form [formGroup]="eventForm" (ngSubmit)="submit()">
+    <input formControlName="title" placeholder="Titre">
+    <textarea formControlName="description" placeholder="Description"></textarea>
+    <select formControlName="category">
+      <option>Gala</option><option>Concert</option><option>Culture</option>
+    </select>
+    <input type="date" formControlName="date">
+    <input type="time" formControlName="time">
+    <input formControlName="location" placeholder="Lieu">
+    <input formControlName="dressCode" placeholder="Code vestimentaire">
+    <div>
+      <label>Image de l'événement</label>
+      <input type="file" (change)="onImageSelected($event)" accept="image/*">
+      @if (imagePreview) { <img [src]="imagePreview" width="100"> }
+    </div>
+    <button type="submit" class="btn-primary">Créer</button>
+  </form>
+</div>
+<app-footer></app-footer>

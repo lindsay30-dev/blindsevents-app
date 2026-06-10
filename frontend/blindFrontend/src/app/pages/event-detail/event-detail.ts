@@ -1,79 +1,84 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EventService } from '../../core/services/event.service';
-import { Event, TicketType } from '../../core/models/event.model';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
-import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { Event } from '../../core/models/event.model';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink, NavbarComponent, FooterComponent],
   templateUrl: './event-detail.html',
   styleUrl: './event-detail.css'
 })
-export class EventDetail implements OnInit {
+export class EventDetailComponent implements OnInit {
   event: Event | null = null;
-  loading             = false;
-  selectedQty: { [key: number]: number } = {};
+  loading = true;
+  quantity: { [key: string]: number } = {};
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private eventService: EventService,
-    public authService: AuthService
+    private cartService: CartService,
+    private notify: NotificationService
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadEvent(id);
+    const eventId = this.route.snapshot.paramMap.get('id')!;
+    this.event = this.eventService.getById(eventId) || null;
+    this.loading = false;
+
+    if (this.event?.tickets) {
+      this.event.tickets.forEach(t => {
+        this.quantity[t.type] = 0;
+      });
+    }
   }
 
-  loadEvent(id: number): void {
-    this.loading = true;
-    this.eventService.getEvent(id).subscribe({
-      next: data => {
-        this.event   = data;
-        this.loading = false;
-        data.ticket_types.forEach(t => this.selectedQty[t.id] = 0);
-      },
-      error: err => {
-        console.error(err);
-        this.loading = false;
-      }
+  increment(ticket: any): void {
+    if (this.quantity[ticket.type] < 10) {
+      this.quantity[ticket.type]++;
+    }
+  }
+
+  decrement(ticket: any): void {
+    if (this.quantity[ticket.type] > 0) {
+      this.quantity[ticket.type]--;
+    }
+  }
+
+  addToCart(ticket: any): void {
+    if (!this.event) return;
+
+    const qty = this.quantity[ticket.type] || 0;
+    if (qty === 0) {
+      this.notify.error('Sélectionnez une quantité');
+      return;
+    }
+
+    this.cartService.addItem({
+      eventId: this.event.id,
+      eventTitle: this.event.title,
+      eventDate: this.event.date,
+      ticketType: ticket.type,
+      price: ticket.price,
+      quantity: qty
     });
-  }
 
-  changeQty(ticketId: number, delta: number, max: number): void {
-    const current = this.selectedQty[ticketId] || 0;
-    this.selectedQty[ticketId] = Math.max(0, Math.min(max, 6, current + delta));
-  }
-
-  getTotal(): number {
-    if (!this.event) return 0;
-    return this.event.ticket_types.reduce((sum, t) => {
-      return sum + (this.selectedQty[t.id] || 0) * t.price;
-    }, 0);
-  }
-
-  getTotalQty(): number {
-    return Object.values(this.selectedQty).reduce((s, q) => s + q, 0);
+    this.notify.success(`${qty} billet(s) ajouté(s) au panier`);
+    this.quantity[ticket.type] = 0;
   }
 
   goToCheckout(): void {
-    if (!this.authService.isLoggedIn) {
-      this.router.navigate(['/auth/login']);
+    if (this.cartService.items().length === 0) {
+      this.notify.error('Votre panier est vide');
       return;
     }
-    const items = this.event!.ticket_types
-      .filter(t => (this.selectedQty[t.id] || 0) > 0)
-      .map(t => ({ ticket_type_id: t.id, quantity: this.selectedQty[t.id] }));
-
-    sessionStorage.setItem('checkout_event_id', String(this.event!.id));
-    sessionStorage.setItem('checkout_items', JSON.stringify(items));
-    sessionStorage.setItem('checkout_total', String(this.getTotal()));
-    sessionStorage.setItem('checkout_event', JSON.stringify(this.event));
     this.router.navigate(['/checkout']);
   }
 }

@@ -1,1 +1,19 @@
-<p>login works!</p>
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="logo">BIG SHOT EVENTS</h1>
+    <h2>Connexion</h2>
+    <form (ngSubmit)="onSubmit()">
+      <input type="email" placeholder="Email ou nom d'utilisateur" [(ngModel)]="email" name="email" required>
+      <input type="password" placeholder="Mot de passe" [(ngModel)]="password" name="password" required>
+      <div class="options">
+        <label><input type="checkbox" [(ngModel)]="rememberMe" name="remember"> Se souvenir de moi</label>
+        <a routerLink="/forgot">Mot de passe oublié ?</a>
+      </div>
+      <button type="submit" class="btn-primary">Se connecter</button>
+    </form>
+    <div class="separator">OU CONTINUER AVEC</div>
+    <button class="btn-google">Google</button>
+    <p>Pas encore membre ? <a routerLink="/register">S'inscrire</a></p>
+    <div class="secure">CONNEXION SÉCURISÉE VIA JWT</div>
+  </div>
+</div>

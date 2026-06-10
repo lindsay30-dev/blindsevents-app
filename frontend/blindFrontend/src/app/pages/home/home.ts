@@ -2,22 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EventService } from '../../core/services/event.service';
-import { Event, Category } from '../../core/models/event.model';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { Event } from '../../core/models/event.model';
+import { FooterComponent } from '../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, FooterComponent],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
 export class Home implements OnInit {
-  events: Event[]       = [];
-  categories: Category[] = [];
-  loading               = false;
-  searchTerm            = '';
-  selectedCategory      = '';
+  events: Event[] = [];
+  categories: any[] = [];
+  loading = false;
+  searchTerm = '';
+  selectedCategory = '';
 
   constructor(private eventService: EventService) {}
 
@@ -28,8 +28,8 @@ export class Home implements OnInit {
 
   loadCategories(): void {
     this.eventService.getCategories().subscribe({
-      next: data => this.categories = data,
-      error: err  => console.error(err)
+      next: (data: any[]) => this.categories = data,
+      error: (err: any) => console.error(err)
     });
   }
 
@@ -37,13 +37,13 @@ export class Home implements OnInit {
     this.loading = true;
     this.eventService.getEvents({
       category: this.selectedCategory || undefined,
-      search:   this.searchTerm || undefined
+      search: this.searchTerm || undefined
     }).subscribe({
-      next: data => {
-        this.events  = data.results || data;
+      next: (data: any) => {
+        this.events = data.results || data;
         this.loading = false;
       },
-      error: err => {
+      error: (err: any) => {
         console.error(err);
         this.loading = false;
       }
@@ -60,8 +60,13 @@ export class Home implements OnInit {
     this.loadEvents();
   }
 
-  getMinPrice(event: Event): number {
-    if (!event.ticket_types?.length) return 0;
-    return Math.min(...event.ticket_types.map(t => t.price));
+  getMinPrice(event: any): number {
+    if (!event.tickets || event.tickets.length === 0) return 0;
+    return Math.min(...event.tickets.map((t: any) => t.price));
+  }
+
+  getTotalSpots(event: any): number {
+    if (!event.tickets) return 0;
+    return event.tickets.reduce((sum: number, t: any) => sum + t.available, 0);
   }
 }

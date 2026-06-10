@@ -7,7 +7,6 @@ import { Booking, BookingCreate } from '../models/booking.model';
 @Injectable({ providedIn: 'root' })
 export class BookingService {
   private apiUrl = environment.apiUrl;
-
   constructor(private http: HttpClient) {}
 
   createBooking(data: BookingCreate): Observable<Booking> {
@@ -26,9 +25,7 @@ export class BookingService {
     return this.http.post(`${this.apiUrl}/bookings/${id}/cancel/`, {});
   }
 
-  verifyTicket(paymentRef: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/bookings/verify/`, {
-      payment_ref: paymentRef
-    });
+  verifyTicket(ref: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bookings/verify/`, { payment_ref: ref });
   }
 }

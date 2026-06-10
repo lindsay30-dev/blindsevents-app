@@ -1,1 +1,136 @@
-<p>home works!</p>
+<!-- HERO -->
+<section class="home-hero">
+  <div class="hero-bg-overlay"></div>
+  <div class="container-xl px-4 hero-content">
+    <div class="hero-logo-wrap">
+      <img src="assets/logo.png" alt="Big Shot Events" class="hero-logo">
+    </div>
+    <h1 class="hero-title">L'excellence au service<br>de vos événements</h1>
+    <p class="hero-sub">
+      Découvrez une sélection exclusive de cérémonies, galas et événements culturels au Cameroun.<br>
+      <span class="hero-pay-mention">
+        Paiements sécurisés via
+        <span class="om-text">Orange Money</span> &
+        <span class="mtn-text">MTN MoMo</span>
+      </span>
+    </p>
+    <div class="hero-ctas">
+      <a routerLink="/auth/register" class="cta-gold">Explorer les Galas</a>
+      <a routerLink="/auth/register" class="cta-ghost">Nous contacter</a>
+    </div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<div class="filters-wrap">
+  <div class="container-xl px-4">
+    <div class="filters-bar">
+      <button class="filter-chip" [class.active]="selectedCategory === ''" (click)="filterByCategory('')">Tous</button>
+      <button class="filter-chip" *ngFor="let cat of categories" [class.active]="selectedCategory === cat.slug" (click)="filterByCategory(cat.slug)">
+        {{ cat.name }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EVENTS SECTION -->
+<section class="events-section">
+  <div class="container-xl px-4">
+    <div class="events-section-header">
+      <div>
+        <h2 class="events-section-title">Prochains Événements</h2>
+        <div class="events-title-underline"></div>
+      </div>
+      <a href="#" class="see-all-link">Voir tout <span class="material-symbols-outlined">arrow_forward</span></a>
+    </div>
+
+    <div class="search-wrap">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" class="search-input" placeholder="Rechercher un événement..." (input)="onSearch($any($event.target).value)">
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="home-spinner mx-auto"></div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Chargement des événements…</p>
+    </div>
+
+    <div *ngIf="!loading && events.length === 0" class="home-empty">
+      <span class="material-symbols-outlined">event_busy</span>
+      <p>Aucun événement disponible pour le moment.</p>
+    </div>
+
+    <div class="home-events-grid" *ngIf="!loading && events.length > 0">
+      <a class="home-event-card" *ngFor="let event of events" [routerLink]="['/events', event.id]">
+        <div class="hec-image">
+          <img *ngIf="event.imageUrl" [src]="event.imageUrl" [alt]="event.title" class="hec-img">
+          <div *ngIf="!event.imageUrl" class="hec-img-placeholder">
+            <div class="hec-placeholder-overlay"></div>
+            <div class="hec-emoji">🎉</div>
+          </div>
+          <div class="hec-badges">
+            <span class="hec-cat-badge">{{ event.category || 'Événement' }}</span>
+            <span class="hec-price-badge">
+              {{ getMinPrice(event) === 0 ? 'GRATUIT' : (getMinPrice(event) | number) + ' XAF' }}
+            </span>
+          </div>
+        </div>
+        <div class="hec-body">
+          <h3 class="hec-title">{{ event.title }}</h3>
+          <p class="hec-desc">{{ event.description.slice(0, 80) }}{{ event.description.length > 80 ? '…' : '' }}</p>
+          <div class="hec-meta">
+            <div class="hec-meta-item">
+              <span class="material-symbols-outlined">calendar_today</span>
+              {{ event.date }}
+            </div>
+            <div class="hec-meta-item">
+              <span class="material-symbols-outlined">location_on</span>
+              {{ event.location.length > 28 ? event.location.slice(0,28)+'…' : event.location }}
+            </div>
+          </div>
+          <div class="hec-footer">
+            <div class="hec-spots">
+              <span class="material-symbols-outlined">group</span>
+              {{ getTotalSpots(event) }} places
+            </div>
+            <button class="hec-reserve-btn">Réserver mon billet</button>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="organizer-cta-section">
+  <div class="container-xl px-4 text-center">
+    <h2 class="oc-title">Organisez Votre Prochain Événement</h2>
+    <p class="oc-sub">
+      De la conception à la réalisation, nous donnons vie à vos visions les plus ambitieuses<br>
+      avec une précision millimétrée.
+    </p>
+    <div class="oc-features">
+      <div class="oc-feature">
+        <div class="oc-feat-icon"><span class="material-symbols-outlined">verified</span></div>
+        <div class="oc-feat-title">Prestige Garanti</div>
+        <div class="oc-feat-sub">Gestion VIP et service exclusif</div>
+      </div>
+      <div class="oc-feature">
+        <div class="oc-feat-icon"><span class="material-symbols-outlined">payments</span></div>
+        <div class="oc-feat-title">Paiement Simple</div>
+        <div class="oc-feat-sub">Mobile Money & Cartes acceptées</div>
+      </div>
+      <div class="oc-feature">
+        <div class="oc-feat-icon"><span class="material-symbols-outlined">bar_chart</span></div>
+        <div class="oc-feat-title">Analytics en temps réel</div>
+        <div class="oc-feat-sub">Suivez vos ventes et performances</div>
+      </div>
+    </div>
+    <a routerLink="/auth/register" class="cta-gold mt-4 d-inline-flex">
+      Commencer maintenant
+      <span class="material-symbols-outlined ms-2">arrow_forward</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<app-footer></app-footer>

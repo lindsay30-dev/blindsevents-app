@@ -1,0 +1,15 @@
+.tickets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.ticket-card {
+  background: var(--surface-container-low);
+  padding: 1rem;
+  border-radius: var(--rounded-lg);
+  border-left: 4px solid var(--primary);
+}
+.muted {
+  opacity: 0.6;
+}
