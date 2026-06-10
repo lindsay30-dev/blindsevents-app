@@ -18,6 +18,9 @@ export class LoginComponent {
   constructor(private auth: AuthService) {}
 
   onSubmit() {
+    console.log(this.password
+    );
+
     this.auth.login(this.email, this.password);
   }
 }
