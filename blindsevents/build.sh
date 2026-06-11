@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
+# Exit on error
 set -o errexit
 
-echo "==> Installation des dépendances"
+# Install Python dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 
-echo "==> Collecte des fichiers statiques"
+# Create media directory if it doesn't exist
+mkdir -p media
+
+# Collect static files
 python manage.py collectstatic --noinput
 
-echo "==> Application des migrations"
+# Apply database migrations
 python manage.py migrate
 
-echo "==> Création du superutilisateur (si non existant)"
-python manage.py createsuperuser --noinput \
-  --username "$DJANGO_SUPERUSER_USERNAME" \
-  --email "$DJANGO_SUPERUSER_EMAIL" \
-  2>/dev/null || echo "Superutilisateur déjà existant"
+# Create superuser if it doesn't exist
+echo "Creating superuser..."
+python manage.py createsuperuser --noinput --username "$DJANGO_SUPERUSER_USERNAME" --email "$DJANGO_SUPERUSER_EMAIL" 2>/dev/null || echo "Superuser already exists or credentials not set"
 
-echo "==> Build terminé avec succès"
+echo "Build completed successfully!"
