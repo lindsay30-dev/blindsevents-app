@@ -28,17 +28,13 @@ export class EventDetailComponent implements OnInit {
     private notify: NotificationService
   ) {}
 
-  ngOnInit(): void {
-    const eventId = this.route.snapshot.paramMap.get('id')!;
-    this.event = this.eventService.getById(eventId) || null;
-    this.loading = false;
-
-    if (this.event?.tickets) {
-      this.event.tickets.forEach(t => {
-        this.quantity[t.type] = 0;
-      });
-    }
-  }
+  ngOnInit() {
+  const id = this.route.snapshot.paramMap.get('id');
+  this.eventService.getById(id!).subscribe(event => {
+    this.event = event;
+    this.event.tickets.forEach(t => this.quantity[t.type] = 0);
+  });
+}
 
   increment(ticket: any): void {
     if (this.quantity[ticket.type] < 10) {

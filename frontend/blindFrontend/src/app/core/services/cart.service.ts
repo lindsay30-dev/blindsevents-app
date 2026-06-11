@@ -1,8 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface CartItem {
-  eventDate: string;
-  eventTitle: string;
   eventId: string;
   ticketType: string;
   price: number;

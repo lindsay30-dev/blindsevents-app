@@ -21,11 +21,8 @@ export class WalletComponent implements OnInit {
   tickets: Ticket[] = [];
 
   ngOnInit() {
-    const user = this.auth.currentUser();
-    if (user) {
-      // ✅ getUserTickets retourne un tableau direct
-      this.tickets = this.ticketService.getUserTickets(user.id);
-    }
+  this.ticketService.getUserTickets().subscribe(tickets => this.tickets = tickets);
+}
   }
 
   downloadTicket(ticket: Ticket) {

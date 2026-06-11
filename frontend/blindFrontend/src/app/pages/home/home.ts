@@ -23,7 +23,8 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
-    this.loadEvents();
+    this.eventService.loadEvents().subscribe();
+
   }
 
   loadCategories(): void {

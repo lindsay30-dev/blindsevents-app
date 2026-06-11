@@ -7,6 +7,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { CurrencyPipe } from '@angular/common';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { PaymentService } from '../../core/services/paiement.service';
 
 @Component({
   selector: 'app-checkout',
@@ -33,48 +34,21 @@ export class CheckoutComponent implements OnInit {
     this.selectedMethod = method;
   }
 
-  pay() {
-    if (!this.selectedMethod) {
-      this.notify.error('Choisissez un moyen de paiement');
-      return;
-    }
+private paymentService = inject(PaymentService);
 
-    const user = this.auth.currentUser();
-    if (!user) {
-      this.notify.error('Vous devez être connecté');
-      return;
-    }
-
-    this.notify.loading('Traitement en cours...');
-
-    // Simulation d'un délai de paiement (2 secondes)
-    setTimeout(() => {
-      try {
-        const items = this.cartService.items();
-
-        // ✅ APPEL DIRECT (plus de .subscribe())
-        for (const item of items) {
-          this.ticketService.purchase(
-            user.id,
-            item.eventId,
-            item.ticketType,
-            item.quantity,
-            item.price * item.quantity,
-            item.eventTitle || '',
-            item.eventDate || '',
-            `${user.prenom} ${user.nom}`
-          );
-        }
-
+pay() {
+  if (!this.selectedMethod) return;
+  this.paymentService.simulatePayment(this.selectedMethod, this.total).subscribe({
+    next: () => {
+      const purchases = this.cartService.items().map((item): any =>
+        this.ticketService.purchase(item.eventId, item.ticketType, item.quantity, item.price * item.quantity).toPromise()
+      );
+      Promise.all(purchases).then(() => {
         this.cartService.clear();
-        this.notify.clear();
-        this.notify.success('Paiement réussi ! Billets disponibles dans "Mes billets"');
         this.router.navigate(['/wallet']);
-      } catch (err) {
-        console.error('Erreur achat:', err);
-        this.notify.clear();
-        this.notify.error('Erreur lors du paiement');
-      }
-    }, 2000);
-  }
+      });
+    },
+    error: () => this.notify.error('Paiement échoué')
+  });
+}
 }

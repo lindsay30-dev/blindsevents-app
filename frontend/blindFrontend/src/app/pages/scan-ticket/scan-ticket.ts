@@ -55,4 +55,10 @@ export class ScanTicketComponent {
       });
     }
   }
+  onScanSuccess(decodedText: string) {
+  this.ticketService.validateTicket(decodedText).subscribe({
+    next: () => this.notify.success('Billet validé'),
+    error: (err) => this.notify.error(err.error.message)
+  });
+}
 }
